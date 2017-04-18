@@ -4,8 +4,6 @@ import sys
 import requests
 import datetime
 import json
-from pprint import pprint
-
 
 STATION_URL = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/autocompletaStazione" 
 SOLUTIONS_URL = "http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/soluzioniViaggioNew"
@@ -69,12 +67,12 @@ def getRunningTrainInfo(trainNumber, originStationCode, srcStationCode):
 		info["stops"] = trainInfoJson["fermate"]
 		for stop in info["stops"]:	
 			if stop["id"] == srcStationCode:
-				info["expectedPlatform"] = stop["binarioProgrammatoPartenzaDescrizione"]
+				info["expectedPlatform"] = stop["binarioProgrammatoArrivoDescrizione"]
 
 				# Remove extra whitespace
 				info["expectedPlatform"] = str(info["expectedPlatform"])[0:2]
 	
-				info["actualPlarform"] = stop["binarioEffettivoPartenzaDescrizione"]
+				info["actualPlarform"] = stop["binarioEffettivoArrivoDescrizione"]
 				info["nonStarted"] = trainInfoJson["nonPartito"]
 				info["prov"] = trainInfoJson["provvedimento"]
 				info["trainType"] = trainInfoJson["tipoTreno"]
@@ -117,6 +115,7 @@ def getSolutionsFromStation(src, dst, solutionNumber=5):
 
 
 	solutionsJson = json.loads(req.content)
+
 	solutions = []
 	
 	for sol in solutionsJson["soluzioni"][0:solutionNumber]:
@@ -131,24 +130,17 @@ def getSolutionsFromStation(src, dst, solutionNumber=5):
 		
 		s_info = getRunningTrainInfo(s["tNum"], s["orgStationNum"], src["full_code"])
 		s["info"] = s_info
-		#pprint(s_info)
+
 		solutions.append(s)
 
 	return solutions
 
 
 if __name__ == "__main__":
-	if len(sys.argv) < 3 or len(sys.argv) > 4:
-		print "Ex: " + sys.argv[0] + " STAZ. PARTENZA " + " STAZ. ARRIVO " + " [NUM DI RISULTATI]"
-		sys.exit(1)
-
-	srcName = sys.argv[1]
-	dstName = sys.argv[2]
+	srcName = "Mirandola"
+	dstName = "Bologna C.le"
 	solNumber = 5
 		
-	if len(sys.argv) == 4:
-		solNumber = int(sys.argv[3])
-
 	print 
 
 	print "Codici delle stazioni:"
@@ -177,11 +169,5 @@ if __name__ == "__main__":
 		if s["info"]["actualPlarform"] == None:
 			s["info"]["actualPlarform"] = "?"
 
-		print s["startTime"] + "\t" \
-		+ s["tNum"] + "\t" \
-		+ s["trainTime"] + "\t" \
-		+ str(s["info"]["delay"]) + " min" + "\t" \
-		+ str(s["info"]["expectedPlatform"]) + "("+str(s["info"]["actualPlarform"])+")" + "\t" \
-		+ s["info"]["status"]
-
+		print s["startTime"] + "\t" + s["tNum"] + "\t" + s["trainTime"] + "\t" + str(s["info"]["delay"]) + " min" + "\t" + str(s["info"]["expectedPlatform"]) + "("+str(s["info"]["actualPlarform"])+")" + "\t" + s["info"]["status"]
 	print	
