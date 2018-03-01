@@ -74,7 +74,7 @@ def getRunningTrainInfo(trainNumber, originStationCode, srcStationCode):
 				# Remove extra whitespace
 				info["expectedPlatform"] = str(info["expectedPlatform"])[0:2]
 	
-				info["actualPlarform"] = stop["binarioEffettivoPartenzaDescrizione"]
+				info["actualPlatform"] = stop["binarioEffettivoPartenzaDescrizione"]
 				info["nonStarted"] = trainInfoJson["nonPartito"]
 				info["prov"] = trainInfoJson["provvedimento"]
 				info["trainType"] = trainInfoJson["tipoTreno"]
@@ -82,6 +82,16 @@ def getRunningTrainInfo(trainNumber, originStationCode, srcStationCode):
 					info["status"] = "Soppresso"	
 				if info["trainType"] == "PG" and info["prov"] == 0:	
 					info["status"] = "Regolare"
+				else:
+					info["status"] = "Unknown"
+
+		# If stops is empty train is cancelled
+		if len(info["stops"]) == 0:
+			info["expectedPlatform"] = "-"
+			info["actualPlatform"] = "-"
+			info["nonStarted"] = True
+			info["trainType"] = "-"
+			info["status"] = "Soppresso"	
 
 		return info
 	else:	
@@ -92,7 +102,6 @@ def getSolutionsFromStation(src, dst, solutionNumber=5):
 
 	src["full_code"] = src["code"]
 	dst["full_code"] = dst["code"]
-
 	# Remove starting "S" and "0" in station codes
 	for c in src["code"]:
 		if c == 'S' or c == '0':
@@ -174,14 +183,14 @@ if __name__ == "__main__":
 	print "ORARIO" + "\t\t\t" + "NUMERO" + "\t" + "DURATA" + "\t" + "RITARDO" + "\t" + "BINARIO" + "\t" + "STATO"	
 
 	for s in solutions:
-		if s["info"]["actualPlarform"] == None:
-			s["info"]["actualPlarform"] = "?"
+		if s["info"]["actualPlatform"] == None:
+			s["info"]["actualPlatform"] = "?"
 
 		print s["startTime"] + "\t" \
 		+ s["tNum"] + "\t" \
 		+ s["trainTime"] + "\t" \
 		+ str(s["info"]["delay"]) + " min" + "\t" \
-		+ str(s["info"]["expectedPlatform"]) + "("+str(s["info"]["actualPlarform"])+")" + "\t" \
+		+ str(s["info"]["expectedPlatform"]) + "("+str(s["info"]["actualPlatform"])+")" + "\t" \
 		+ s["info"]["status"]
 
 	print	
